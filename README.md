@@ -19,7 +19,34 @@
 
 ## ローカルMVPの起動と検証
 
-Node.js 22以上で `npm start` を実行し、`http://127.0.0.1:3000` を開いてください。自動テストは `npm test` です。操作方法、制限、検証範囲は [APP_USAGE.md](APP_USAGE.md) を参照してください。外部パッケージ、月額サービス、APIキーは不要です。公開運用・実農場での利用は未検証です。
+Node.js 22以上とnpmを用意し、リポジトリのルートで実行します。Windows PowerShellの実行制限がある場合は `npm` を `npm.cmd` に置き換えてください。
+
+```sh
+npm ci
+npm run typecheck
+npm test
+npm run demo
+npm run benchmark
+npm start
+```
+
+`npm ci` は固定版TypeScript（開発依存）の取得に初回ネット接続が必要です。実行時の外部API・月額サービス・APIキーは不要です。
+`npm start` はビルド後に既存MVPを起動します。[ローカル画面](http://127.0.0.1:3000)を開き、終了はCtrl+C。
+操作は[APP_USAGE.md](APP_USAGE.md)、計算APIの型は[src/scheduler/model.ts](src/scheduler/model.ts)、入口は[src/scheduler/solve.ts](src/scheduler/solve.ts)。
+`npm run demo` はSC-001の模擬データを計算し、OPTIMAL・11:00 JSTの完了時刻をJSONで出力します。
+
+### Phase 1の品質と範囲
+
+既存Draft PR #2のMVPを再利用し、計算部をstrict TypeScriptに分離しました。1農場・最大7日・30分・最大20作業は検証用の暫定仕様です。
+期間/期限、作業員・農機・圃場の排他、利用可能時間、作業不可時間、先行関係を検査します。
+結果はOPTIMAL / FEASIBLE / INFEASIBLE / UNKNOWN。入力不正はInputError、内部異常は例外で通知します。
+既定の2秒/300,000ノード上限は協調的な停止であり、厳密な応答時間保証ではありません。
+
+28件のテスト（独立した81ケースの最適値比較を含む）がローカルで成功。
+20作業の測定では約2秒でFEASIBLEとなり、最適性は未証明です。詳細は[検証記録](docs/testing/PHASE1_RESULTS.md)。
+[ADR-0001](docs/adr/0001-scheduler-phase1.md)に計算量、正確性の根拠、入力契約、代替案を記録しています。
+[Phase 2 Web基本設計](docs/design/PHASE2_WEB.md)と[ADR-0002](docs/adr/0002-phase2-web-design.md)は設計のみで、新画面は実装していません。
+公開運用・実農場での利用は未検証です。
 
 ## 要件定義ドキュメント
 

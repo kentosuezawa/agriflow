@@ -32,7 +32,6 @@ function interval(start, end, name) {
 }
 function refs(state, operation) {
   if (!state.fields.some(x => x.id === operation.fieldId)) fail('圃場が存在しません');
-  if (operation.machineType && !state.machines.some(x => x.type === operation.machineType)) fail('指定された種類の農機が存在しません');
   for (const p of operation.predecessors) if (!state.operations.some(x => x.id === p)) fail('先行作業が存在しません');
   if (operation.predecessors.includes(operation.id)) fail('自分自身を先行作業にはできません');
 }
@@ -107,83 +106,12 @@ export function mutate(state, collection, action, raw, entityId = null) {
   return next;
 }
 
-const overlaps = (a, b, c, d) => a < d && c < b;
-const available = (entity, start, end) => entity.availability.some(x => Date.parse(x.start) <= start && end <= Date.parse(x.end));
-export function validatePlan(snapshot, assignments, period) {
-  const operations = snapshot.operations;
-  if (assignments.length !== operations.length) return false;
-  const assigned = new Map(assignments.map(x => [x.operationId, x]));
-  if (assigned.size !== operations.length) return false;
-  for (const op of operations) {
-    const a = assigned.get(op.id); if (!a) return false;
-    const start = Date.parse(a.start), end = Date.parse(a.end);
-    if (!Number.isFinite(start) || !Number.isFinite(end) || start % SLOT_MS || end - start !== op.duration * SLOT_MS) return false;
-    if (start < Date.parse(period.start) || end > Date.parse(period.end) || start < Date.parse(op.earliest) || end > Date.parse(op.deadline)) return false;
-    const worker = snapshot.workers.find(x => x.id === a.workerId);
-    if (!worker || !available(worker, start, end)) return false;
-    if (op.machineType) {
-      const machine = snapshot.machines.find(x => x.id === a.machineId);
-      if (!machine || machine.type !== op.machineType || !available(machine, start, end)) return false;
-    } else if (a.machineId !== null) return false;
-    if (snapshot.blocked.some(x => x.fieldId === op.fieldId && overlaps(start, end, Date.parse(x.start), Date.parse(x.end)))) return false;
-    for (const p of op.predecessors) if (!assigned.has(p) || Date.parse(assigned.get(p).end) > start) return false;
-  }
-  for (let i = 0; i < assignments.length; i++) for (let j = i + 1; j < assignments.length; j++) {
-    const a = assignments[i], b = assignments[j];
-    const opA = operations.find(x => x.id === a.operationId), opB = operations.find(x => x.id === b.operationId);
-    if (overlaps(Date.parse(a.start), Date.parse(a.end), Date.parse(b.start), Date.parse(b.end)) && (a.workerId === b.workerId || (a.machineId && a.machineId === b.machineId) || opA.fieldId === opB.fieldId)) return false;
-  }
-  return true;
-}
-
+// Compatibility adapter: retain the existing MVP and stored proposal format.
+import { validatePlan } from '../dist/verify.js';
+import { solve as solveTyped } from '../dist/solve.js';
+export { validatePlan };
 export function solve(snapshot, period, limitMs = 2000) {
-  const [periodStart, periodEnd] = interval(period.start, period.end, '計画期間');
-  if (periodEnd - periodStart > MAX_SLOTS * SLOT_MS) fail('計画期間は7日以内にしてください');
-  if (snapshot.operations.length === 0) fail('作業を1件以上登録してください');
-  if (snapshot.operations.length > 20) fail('作業は20件以内にしてください');
-  integer(limitMs, '計算上限ミリ秒', 1);
-  if (limitMs > 10000) fail('計算上限は10000ミリ秒以内にしてください');
-  validateGraph(snapshot.operations);
-  const started = Date.now(), assigned = [], used = new Map();
-  let best = null, bestEnd = Infinity, timedOut = false, nodes = 0;
-  const order = [];
-  const byId = new Map(snapshot.operations.map(x => [x.id, x]));
-  const pending = new Set(byId.keys());
-  while (pending.size) {
-    const ready = [...pending].map(x => byId.get(x)).filter(x => x.predecessors.every(p => !pending.has(p)));
-    if (!ready.length) fail('先行関係が循環しています');
-    ready.sort((a,b) => Date.parse(a.deadline) - Date.parse(b.deadline));
-    order.push(ready[0]); pending.delete(ready[0].id);
-  }
-  const iso = ms => new Date(ms).toISOString().replace('.000Z', 'Z');
-  function walk(index, maxEnd) {
-    if (Date.now() - started >= limitMs || nodes++ > 300000) { timedOut = true; return; }
-    if (maxEnd >= bestEnd) return;
-    if (index === order.length) { best = clone(assigned); bestEnd = maxEnd; return; }
-    const op = order[index], duration = op.duration * SLOT_MS;
-    const earliest = Math.max(periodStart, Date.parse(op.earliest), ...op.predecessors.map(p => used.get(p)?.end ?? periodStart));
-    const latest = Math.min(periodEnd, Date.parse(op.deadline)) - duration;
-    const machines = op.machineType ? snapshot.machines.filter(x => x.type === op.machineType) : [null];
-    for (let start = earliest; start <= latest && !timedOut; start += SLOT_MS) {
-      const end = start + duration;
-      if (snapshot.blocked.some(x => x.fieldId === op.fieldId && overlaps(start,end,Date.parse(x.start),Date.parse(x.end)))) continue;
-      if (assigned.some(x => byId.get(x.operationId).fieldId === op.fieldId && overlaps(start,end,Date.parse(x.start),Date.parse(x.end)))) continue;
-      for (const worker of snapshot.workers) {
-        if (!available(worker,start,end) || assigned.some(x => x.workerId === worker.id && overlaps(start,end,Date.parse(x.start),Date.parse(x.end)))) continue;
-        for (const machine of machines) {
-          if (machine && (!available(machine,start,end) || assigned.some(x => x.machineId === machine.id && overlaps(start,end,Date.parse(x.start),Date.parse(x.end))))) continue;
-          assigned.push({ operationId: op.id, workerId: worker.id, machineId: machine?.id ?? null, start: iso(start), end: iso(end) });
-          used.set(op.id,{start,end}); walk(index + 1, Math.max(maxEnd,end));
-          assigned.pop(); used.delete(op.id);
-          if (timedOut) break;
-        }
-        if (timedOut) break;
-      }
-    }
-  }
-  walk(0, periodStart);
-  if (best && !validatePlan(snapshot,best,period)) fail('計算結果の制約検証に失敗しました');
-  return { status: timedOut ? best ? 'FEASIBLE' : 'UNKNOWN' : best ? 'OPTIMAL' : 'INFEASIBLE', assignments: best ?? [], makespan: best ? iso(bestEnd) : null, nodes, elapsedMs: Date.now() - started };
+  return solveTyped(snapshot, period, { limitMs });
 }
 
 export function makeProposal(state, period, limitMs) {

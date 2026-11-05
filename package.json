@@ -4,9 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prestart": "npm run build",
     "start": "node src/server.js",
-    "test": "node --test"
+    "test": "npm run build && node --test test/*.test.js",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "demo": "npm run build && node scripts/demo.mjs"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
 }
-

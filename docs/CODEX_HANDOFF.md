@@ -1,4 +1,14 @@
-# Codex 引き継ぎ情報 — AgriFlow
+# 2026-11-05 更新（以下の2026-10-29記録より優先）
+
+ユーザーの明示指示でPhase 1実装・テスト改善とPhase 2設計を実施。要件v0.1-draftは未承認のまま。
+作業ブランチは `feat/scheduler-phase1-poc`。既存MVP（Draft PR #2）を継承し、計算部分をTypeScriptに分離。
+`npm ci` の後 `npm test` / `npm run typecheck` / `npm run demo` / `npm run benchmark` が利用可能。
+詳細は[検証記録](testing/PHASE1_RESULTS.md)、[ADR](adr/0001-scheduler-phase1.md)、[Web基本設計](design/PHASE2_WEB.md)。
+次はDraft PRのレビュー、P0要件判断、Phase 2設計のレビュー。新画面・クラウド・有料サービスは今回実装しない。
+
+---
+
+# Codex 引き継ぎ情報 — AgriFlow（2026-10-29の記録）
 
 **更新:** 2026-10-29  
 **状態:** Requirements v0.1-draft（要件定義書はGitHub登録済み、レビュー前）  
