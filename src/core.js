@@ -48,6 +48,7 @@ function validateGraph(operations) {
   for (const x of operations) visit(x.id);
 }
 export function validateEntity(state, collection, raw, existingId = null) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('入力はオブジェクトで指定してください');
   const item = { id: existingId || id() };
   if (collection === 'fields' || collection === 'workers') item.name = text(raw.name, '名前');
   else if (collection === 'machines') { item.name = text(raw.name, '農機名'); item.type = text(raw.type, '農機種類'); }
@@ -59,7 +60,8 @@ export function validateEntity(state, collection, raw, existingId = null) {
     const [a,b] = interval(item.earliest, item.deadline, '作業可能期間');
     if (b - a < item.duration * SLOT_MS) fail('作業可能期間が所要時間より短いです');
     item.machineType = raw.machineType ? text(raw.machineType, '農機種類') : null;
-    item.predecessors = Array.isArray(raw.predecessors) ? raw.predecessors : [];
+    if (!Array.isArray(raw.predecessors)) fail('先行作業は配列で指定してください');
+    item.predecessors = raw.predecessors;
     if (new Set(item.predecessors).size !== item.predecessors.length || item.predecessors.some(x => typeof x !== 'string')) fail('先行作業IDが不正です');
     refs(state, item);
     validateGraph([...state.operations.filter(x => x.id !== existingId), item]);
@@ -70,7 +72,9 @@ export function validateEntity(state, collection, raw, existingId = null) {
   } else fail('対象が不正です');
   if (collection === 'workers' || collection === 'machines') {
     if (!Array.isArray(raw.availability)) fail('利用可能時間を配列で指定してください');
+    if (raw.availability.length > 1000) fail('利用可能時間は最大1000件です');
     item.availability = raw.availability.map((x, i) => {
+      if (!x || typeof x !== 'object') fail('利用可能時間が不正です');
       interval(x.start, x.end, `利用可能時間${i + 1}`);
       return { start: x.start, end: x.end };
     });
@@ -96,6 +100,7 @@ export function mutate(state, collection, action, raw, entityId = null) {
     } else {
       if (action === 'update' && index < 0) fail('対象が見つかりません');
       if (action !== 'update' && action !== 'create') fail('操作が不正です');
+      if (action === 'create' && next[collection].length >= (collection === 'operations' ? 20 : collection === 'blocked' ? 1000 : 100)) fail('登録上限を超えています');
       const item = validateEntity(next, collection, raw, action === 'update' ? entityId : null);
       if (action === 'update') next[collection][index] = item;
       else next[collection].push(item);

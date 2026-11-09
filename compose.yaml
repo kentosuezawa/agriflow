@@ -1,0 +1,37 @@
+name: agriflow
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: agriflow
+      POSTGRES_DB: agriflow
+      POSTGRES_PASSWORD: ${AGRIFLOW_DB_PASSWORD:?Run node scripts/configure.mjs first}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U agriflow -d agriflow']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks: [backend]
+  app:
+    build: .
+    init: true
+    environment:
+      DATABASE_URL: postgres://agriflow:${AGRIFLOW_DB_PASSWORD}@db:5432/agriflow
+      PUBLIC_ORIGIN: http://127.0.0.1:${AGRIFLOW_PORT:-3000}
+    ports:
+      - '127.0.0.1:${AGRIFLOW_PORT:-3000}:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, 'fetch("http://127.0.0.1:3000/api/health",{headers:{host:new URL(process.env.PUBLIC_ORIGIN).host}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+networks:
+  backend:
+volumes:
+  database:

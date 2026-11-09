@@ -11,7 +11,10 @@
     "test": "npm run build && node --test test/*.test.js",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
     "demo": "npm run build && node scripts/demo.mjs",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "seed": "node scripts/seed.mjs",
+    "import:json": "node scripts/import-json.mjs",
+    "test:integration": "npm run build && node --test test/integration/*.test.js"
   },
   "engines": {
     "node": ">=22"
@@ -19,5 +22,8 @@
   "devDependencies": {
     "@playwright/test": "1.58.2",
     "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "pg": "8.16.3"
   }
 }
