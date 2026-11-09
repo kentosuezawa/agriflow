@@ -23,7 +23,7 @@ function renderOptions() {
   document.querySelectorAll('select[name="fieldId"]').forEach(select => { select.replaceChildren(); option(select,'','選択してください'); state.fields.forEach(x=>option(select,x.id,x.name)); });
   const machine=$('select[name="machineType"]'); machine.replaceChildren(); option(machine,'','不要');
   [...new Set(state.machines.map(x=>x.type))].forEach(x=>option(machine,x,x));
-  const predecessor=$('select[name="predecessor"]'); predecessor.replaceChildren(); option(predecessor,'','なし'); state.operations.forEach(x=>option(predecessor,x.id,x.name));
+  const predecessor=$('select[name="predecessor"]'); predecessor.replaceChildren(); state.operations.forEach(x=>option(predecessor,x.id,x.name));
 }
 function record(container,title,detail,onEdit,onDelete) {
   const row=node('div','','record'), left=node('div'); left.append(node('strong',title),node('small',detail));
@@ -39,7 +39,7 @@ function editRecord(collection,item) {
     if (!input.name) continue;
     if (input.name==='availability') input.value=item.availability.map(x=>`${inputTime(x.start)},${inputTime(x.end)}`).join('\n');
     else if (['earliest','deadline','start','end'].includes(input.name)) input.value=inputTime(item[input.name]);
-    else if (input.name==='predecessor') input.value=item.predecessors?.[0] || '';
+    else if (input.name==='predecessor') { for (const choice of input.options) choice.selected=item.predecessors.includes(choice.value); }
     else input.value=item[input.name] ?? '';
   }
   form.querySelector('button.primary').textContent='変更を保存';
@@ -126,7 +126,7 @@ $('#farm-form').addEventListener('submit',event=>{event.preventDefault();run(asy
 document.querySelectorAll('form[data-collection]').forEach(form=>form.addEventListener('submit',event=>{ event.preventDefault();run(async()=>{
   const collection=form.dataset.collection, formData=new FormData(form), data=Object.fromEntries(formData);
   if (collection==='workers'||collection==='machines') data.availability=availability(data.availability);
-  if (collection==='operations') { data.duration=Number(data.duration); data.earliest=toUtc(data.earliest); data.deadline=toUtc(data.deadline); data.machineType ||= null; data.predecessors=data.predecessor?[data.predecessor]:[]; delete data.predecessor; }
+  if (collection==='operations') { data.duration=Number(data.duration); data.earliest=toUtc(data.earliest); data.deadline=toUtc(data.deadline); data.machineType ||= null; data.predecessors=formData.getAll('predecessor'); delete data.predecessor; }
   if (collection==='blocked') { data.start=toUtc(data.start); data.end=toUtc(data.end); }
   const editing=Boolean(form.dataset.editId);
   state=await api('/api/entities',{collection,action:editing?'update':'create',id:editing?form.dataset.editId:undefined,data});
