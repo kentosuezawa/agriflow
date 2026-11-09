@@ -19,3 +19,9 @@
 - DEC-010: 既存MVPを継承し、計算部にTypeScriptを採用。[ADR-0001](adr/0001-scheduler-phase1.md)。
 - DEC-011: 1農場・最大7日・30分・分割不可・1人/農機0〜1台・必須期限・makespanを検証用仮定として使用。DEC-003〜005の製品レビューは未完了。
 - DEC-012: Webは既存Node構成の段階的改善を設計。公開先・DB・UIフレームワークの追加は保留。[ADR-0002](adr/0002-phase2-web-design.md)。
+
+## 2026-11-09 提出版 /goal
+
+- DEC-013: ユーザーがDB/Docker・画面・受入・資料までの実装を/goalで依頼。現行モデルの模擬提出版が今回の範囲。業務ルール変更希望・製品v1.0・mainマージ・公開は別。
+- DEC-014: PostgreSQL/Compose/workerを採用。理由・SQLite代替・無料条件はADR-0004。
+- DEC-015: PR #4→#7→#8→提出版PRへ積み、最後のブランチで全変更を検証。既存PRのcloseはしない。

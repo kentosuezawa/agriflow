@@ -1,6 +1,8 @@
 import { initialState, mutate } from '../src/core.js';
 import { PostgresRepository } from '../src/storage/postgres.js';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 export const demoPeriod={start:'2026-11-02T00:00:00Z',end:'2026-11-02T08:00:00Z'};
 export function demoState() {
   let s=initialState(); s=mutate(s,'farm','update',{name:'デモ農場（すべて模擬データ）'});
@@ -11,7 +13,7 @@ export function demoState() {
   for(let i=0;i<4;i++)s=mutate(s,'operations','create',{name:names[i],fieldId:s.fields[i%2].id,duration:2,earliest:demoPeriod.start,deadline:demoPeriod.end,machineType:i<2?'tractor':null,predecessors:i>=2?[s.operations[0].id,s.operations[1].id]:[]});
   return s;
 }
-if(process.argv[1] && new URL(import.meta.url).pathname===process.argv[1]) {
+if(process.argv[1] && fileURLToPath(import.meta.url)===path.resolve(process.argv[1])) {
   const state=demoState();
   if(process.argv.includes('--json')) {
     const file=process.env.AGRIFLOW_DATA_FILE;

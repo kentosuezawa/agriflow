@@ -14,7 +14,9 @@
     "test:e2e": "npm run build && playwright test",
     "seed": "node scripts/seed.mjs",
     "import:json": "node scripts/import-json.mjs",
-    "test:integration": "npm run build && node --test test/integration/*.test.js"
+    "test:integration": "npm run build && node --test test/integration/*.test.js",
+    "measure": "npm run build && node scripts/measure.mjs",
+    "verify:recovery": "node scripts/verify-recovery.mjs"
   },
   "engines": {
     "node": ">=22"

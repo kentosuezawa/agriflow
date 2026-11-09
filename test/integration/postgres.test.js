@@ -51,6 +51,15 @@ test('PF-05: SC-004 absence/replan retains v1 until approval and after v2',async
   await repo.transaction(current=>{const c=commitProposal(current,p.proposal.id);return {state:c.state,result:c.entry};});
   const after=await repo.read();assert.equal(after.committed.length,2);assert.deepEqual(after.committed[0],v1);
 });
+test('PF-07: failed approval write rolls back and leaves previous committed history unchanged',async()=>{
+  const state=await repo.read(),p=makeProposal(state,demoPeriod,2000);
+  await repo.transaction(()=>({state:p.state,result:null}));const before=await repo.read();
+  await repo.pool.query('ALTER TABLE committed ADD CONSTRAINT injected_failure CHECK(version < 3) NOT VALID');
+  try {
+    await assert.rejects(repo.transaction(s=>{const c=commitProposal(s,p.proposal.id);return {state:c.state,result:c.entry};}),e=>e.code==='23514');
+    assert.deepEqual(await repo.read(),before);
+  }finally{await repo.pool.query('ALTER TABLE committed DROP CONSTRAINT injected_failure');}
+});
 test('PF-06: HTTP validates input/origin; stale commit is 409 and storage failure is safe 500',async()=>{
   const server=await createApp({repository:repo,publicOrigin:'http://127.0.0.1:3141',logger:()=>{}});
   await new Promise(resolve=>server.listen(3141,'127.0.0.1',resolve));

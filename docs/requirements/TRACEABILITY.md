@@ -52,3 +52,18 @@ FR-001〜004のCRUD、FR-014の表示、FR-017の永続化、NFR-006の公開保
 - FR-008: 複数先行条件がUI編集で1件に減る欠陥を再現。エンジン対応のみで機能全体を受入完了にしない。
 
 今後はTCごとにテストファイル/test名・対象SHA・CI URL・未検証範囲を追記する。今回の一時HTTP/ブラウザ検査はCIへ組み込まれた回帰テストではない。
+
+## 提出版 PF受け入れ（2026-11-09）
+
+[PF-01〜13と証拠](../testing/PORTFOLIO_RESULTS.md)を最新実装の対応として参照。FR-014のタイムライン、SC-004全体、PostgreSQL整合性・移行/復元、CIは提出版で追加した。旧表と過去監査の未検証は当時の記録として保持する。製品要件はv0.1-draftのまま未承認。
+
+| 既存要件/TC | 提出版のtest名・ファイル | 受入ID |
+|---|---|---|
+| FR-001〜008/TC-001〜003 | core.test.js、scheduler.test.js、integration/postgres.test.jsの登録上限/FK、e2e/predecessors.spec.jsの名称編集保持 | PF-03/07 |
+| FR-009〜013/018、HC-001〜008、TC-004〜006 | scheduler.test.js（81小規模比較・4状態・独立検査）、e2e/states.spec.js（mock表示） | PF-04/06/11 |
+| FR-014〜017、AC-P03/04、TC-007〜009/011 | e2e/portfolio.spec.js（390/1440px欠勤→承認）、integration/postgres.test.js（SC-004/同時承認/失敗rollback/再接続一致） | PF-04/05/07/08/09 |
+| NFR-001/007/012、AC-P05、TC-010 | Compose build/health、CI workflow、README、verify-recovery.mjs | PF-01/10/12/13 |
+| NFR-002/003/005、TC-011/012 | integration/postgres.test.js（入力/外部Origin/409/内部500/FK） | PF-06/07/08 |
+| NFR-008/009/010、TC-013 | engine cutoff、measure.mjs、performance.json、ADR-0004 | PF-11 |
+
+NFR-006の公開保護・NFR-011のGit全履歴秘密監査は完了扱いにしない。今回追加ファイルの秘密混入はレビューし、.env/backup/dataを除外する。
