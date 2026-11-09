@@ -1,0 +1,100 @@
+{
+  "environment": {
+    "node": "v22.23.4",
+    "os": "linux 6.18.57",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "memoryBytes": 10452459520
+  },
+  "workload": {
+    "operations": 20,
+    "fields": 5,
+    "workers": 3,
+    "machines": 2,
+    "days": 7,
+    "slotMinutes": 30,
+    "limitMs": 2000,
+    "maxNodes": 300000
+  },
+  "conditions": "Five sequential runs, no explicit warmup; RSS before/after is not peak; HTTP probes use actual app+worker; database mode is recorded separately.",
+  "storage": "postgres",
+  "solver": [
+    {
+      "wallMs": 2002.5423590000003,
+      "rssBefore": 67743744,
+      "rssAfter": 76738560,
+      "nodes": 17829,
+      "status": "FEASIBLE",
+      "termination": "time-limit",
+      "valid": true
+    },
+    {
+      "wallMs": 2000.8053499999996,
+      "rssBefore": 76738560,
+      "rssAfter": 76992512,
+      "nodes": 17933,
+      "status": "FEASIBLE",
+      "termination": "time-limit",
+      "valid": true
+    },
+    {
+      "wallMs": 2000.5996649999997,
+      "rssBefore": 76992512,
+      "rssAfter": 76992512,
+      "nodes": 17359,
+      "status": "FEASIBLE",
+      "termination": "time-limit",
+      "valid": true
+    },
+    {
+      "wallMs": 2000.5759090000001,
+      "rssBefore": 76992512,
+      "rssAfter": 77123584,
+      "nodes": 17712,
+      "status": "FEASIBLE",
+      "termination": "time-limit",
+      "valid": true
+    },
+    {
+      "wallMs": 2000.5699800000002,
+      "rssBefore": 77123584,
+      "rssAfter": 77123584,
+      "nodes": 18193,
+      "status": "FEASIBLE",
+      "termination": "time-limit",
+      "valid": true
+    }
+  ],
+  "http": [
+    {
+      "proposalWallMs": 2063.9404460000005,
+      "stateDuringComputeMs": 11.95386999999937,
+      "stateStatus": 200,
+      "resultStatus": "FEASIBLE"
+    },
+    {
+      "proposalWallMs": 2083.771323000001,
+      "stateDuringComputeMs": 7.4726730000002135,
+      "stateStatus": 200,
+      "resultStatus": "FEASIBLE"
+    },
+    {
+      "proposalWallMs": 2099.6779339999994,
+      "stateDuringComputeMs": 8.220347000000402,
+      "stateStatus": 200,
+      "resultStatus": "FEASIBLE"
+    },
+    {
+      "proposalWallMs": 2075.0788749999992,
+      "stateDuringComputeMs": 19.46026400000119,
+      "stateStatus": 200,
+      "resultStatus": "FEASIBLE"
+    },
+    {
+      "proposalWallMs": 2145.9930349999995,
+      "stateDuringComputeMs": 16.007142999998905,
+      "stateStatus": 200,
+      "resultStatus": "FEASIBLE"
+    }
+  ]
+}

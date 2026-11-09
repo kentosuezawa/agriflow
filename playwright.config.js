@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e', workers: 1, retries: 0,
-  use: { baseURL: process.env.E2E_URL || 'http://127.0.0.1:3138', viewport: { width: 390, height: 844 },
+  use: { locale: 'ja-JP', timezoneId: 'Asia/Tokyo', baseURL: process.env.E2E_URL || 'http://127.0.0.1:3138', viewport: { width: 390, height: 844 },
     launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
     trace: 'retain-on-failure' },
   webServer: process.env.E2E_URL ? undefined : {

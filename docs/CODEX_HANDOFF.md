@@ -1,3 +1,15 @@
+# 提出版実装の引き継ぎ（2026-11-09、最新）
+
+- /goalのPF-01〜13に沿ってローカル提出版を実装。業務前提変更希望・製品v1.0・公開認証/ライセンス等は未解決。mainマージ/本番公開/既存PR closeはしていない。
+- ブランチ: `feat/portfolio-experience`。#3→#4→[#7](https://github.com/kentosuezawa/agriflow/pull/7)→[#8](https://github.com/kentosuezawa/agriflow/pull/8)→このブランチの提出PR。先端ブランチは全変更を含む。baseのPR番号だけ見て古い状態を実行しない。
+- 修正: 複数先行条件の保持、欠勤入力、タイムライン/一覧/JST、差分・古い候補無効、履歴。DB: PostgreSQL17、FK/CHECK、行ロックtransaction・追記履歴、JSON移行、worker計算、Compose。
+- [提出版検証](testing/PORTFOLIO_RESULTS.md)、[運用](OPERATIONS.md)、[5分実演](DEMO.md)、[構成/ER](design/ARCHITECTURE.md)、[API](design/API.md)、[ADR-0004](adr/0004-postgres-compose.md)。
+- 実行済み: unit30（計算28＋保存/移行2）/typecheck、Node22/PostgreSQLのintegration7、Compose対象Chromium7（うち4状態表示はmock）、Compose build/health/seed、app/db再作成とpg_dump→新DB復元の全state一致、20作業の5回測定。詳細と生値はtesting/。
+- Node起動はDATABASE_URLがなければ従来JSON版。提出版はREADMEのCompose手順。`npm run test:integration`はDB必須で黙ってskipしない。E2Eは専用模擬DBだけに向ける。
+- 次: 提出PR先端のCIと資料をレビューし、承認を得たPRだけ統合する。統合順は依存を確認。最終ブランチをcheckoutして全変更を試せる。業務前提の変更は別Issueで具体化する。
+
+---
+
 # 2026-11-09 追補: 最初の提出可能版の目標案
 
 ユーザーは /goal の範囲にDB・Dockerを含め、まず成果物として提示できる水準を希望している。

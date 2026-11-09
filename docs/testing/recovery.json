@@ -1,0 +1,12 @@
+{
+  "containerRecreation": "pass (app and db recreated with named volume retained)",
+  "backupRestore": "pass (pg_dump custom -> fresh DB -> full state equality)",
+  "counts": {
+    "operations": 7,
+    "proposals": 4,
+    "committed": 4
+  },
+  "backupBytes": 18784,
+  "backupSha256": "29cbf90dc0af428b44bfba91f2dc40e4f8b1ff52c36e8b60873166cc42e9a329",
+  "sourcePreserved": true
+}
