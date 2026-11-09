@@ -2,6 +2,11 @@ name: Test
 on:
   push:
   pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     strategy:
@@ -13,7 +18,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: agriflow
+          POSTGRES_PASSWORD: ci_only_not_a_secret
+          POSTGRES_DB: agriflow
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U agriflow"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      DATABASE_URL: postgres://agriflow:ci_only_not_a_secret@127.0.0.1:5432/agriflow
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:integration
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS schema_migrations (version integer PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE farm_state (singleton integer PRIMARY KEY CHECK (singleton=1), revision integer NOT NULL CHECK(revision>=0), name text NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 100));
+INSERT INTO farm_state VALUES (1,0,'模擬農場');
+CREATE TABLE fields (id text PRIMARY KEY, ordinal integer NOT NULL, name text NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 100));
+CREATE TABLE workers (id text PRIMARY KEY, ordinal integer NOT NULL, name text NOT NULL, availability jsonb NOT NULL CHECK(jsonb_typeof(availability)='array'));
+CREATE TABLE machines (id text PRIMARY KEY, ordinal integer NOT NULL, name text NOT NULL, type text NOT NULL CHECK(length(trim(type)) BETWEEN 1 AND 100), availability jsonb NOT NULL CHECK(jsonb_typeof(availability)='array'));
+CREATE TABLE operations (id text PRIMARY KEY, ordinal integer NOT NULL, field_id text NOT NULL REFERENCES fields(id), name text NOT NULL, duration integer NOT NULL CHECK(duration BETWEEN 1 AND 336), earliest timestamptz NOT NULL, deadline timestamptz NOT NULL CHECK(deadline>earliest), machine_type text);
+CREATE TABLE predecessors (operation_id text REFERENCES operations(id) ON DELETE CASCADE, predecessor_id text REFERENCES operations(id), ordinal integer NOT NULL, PRIMARY KEY(operation_id,predecessor_id), CHECK(operation_id<>predecessor_id));
+CREATE TABLE blocked (id text PRIMARY KEY, ordinal integer NOT NULL, field_id text NOT NULL REFERENCES fields(id), start_time timestamptz NOT NULL, end_time timestamptz NOT NULL CHECK(end_time>start_time));
+CREATE TABLE proposals (id text PRIMARY KEY, ordinal integer NOT NULL, base_revision integer NOT NULL CHECK(base_revision>=0), base_version integer NOT NULL CHECK(base_version>=0), status text NOT NULL CHECK(status IN ('OPTIMAL','FEASIBLE','INFEASIBLE','UNKNOWN')), created_at timestamptz NOT NULL, document jsonb NOT NULL CHECK(jsonb_typeof(document)='object'));
+CREATE TABLE committed (version integer PRIMARY KEY CHECK(version>0), proposal_id text NOT NULL UNIQUE REFERENCES proposals(id), committed_at timestamptz NOT NULL, document jsonb NOT NULL CHECK(jsonb_typeof(document)='object'));
+CREATE INDEX proposals_created_at_idx ON proposals(created_at);
+CREATE INDEX committed_time_idx ON committed(committed_at);
+INSERT INTO schema_migrations(version) VALUES (1);
