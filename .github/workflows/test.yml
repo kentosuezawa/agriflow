@@ -23,7 +23,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
   integration:
-    # Playwright 1.58.2 browser dependencies support Ubuntu 24.04.
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -46,5 +45,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:integration
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - name: Run browser tests with runner-provided Chrome
+        run: |
+          export CHROMIUM_PATH="$(command -v google-chrome)"
+          "$CHROMIUM_PATH" --version
+          npm run test:e2e
