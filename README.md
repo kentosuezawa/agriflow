@@ -7,7 +7,7 @@
 
 ## 提出版の実演と起動
 
-![PCでの再計画と差分](docs/screenshots/replan-1440.png)
+![PCでの再計画と差分](docs/screenshots/quality/replan-1440.jpg)
 
 担当者の欠勤を入力して再計画し、差分を確認してから承認できます。旧版は履歴に残ります。
 Node.js / TypeScript、PostgreSQL17、worker thread、Docker Composeで実装。公開用認証はなく、ローカル・模擬データ専用です。
@@ -25,8 +25,9 @@ http://127.0.0.1:3000 を開く。seedは空DBのみ、期間は2026-11-02 09:00
 | [実演台本](docs/DEMO.md) | 計画→欠勤→再計画→承認→履歴を5分で説明 |
 | [構成とER図](docs/design/ARCHITECTURE.md) / [API](docs/design/API.md) | worker・DB・版管理とHTTP契約 |
 | [ADR-0004](docs/adr/0004-postgres-compose.md) | PostgreSQL/SQLite、transaction、Composeの判断 |
+| [操作品質の改善記録](docs/testing/QUALITY_PASS.md) | 改善前後の画像、操作・異常系・再テスト |
 | [提出版の検証](docs/testing/PORTFOLIO_RESULTS.md) | PF-01〜13、CI・テスト・性能・復元の証拠と限界 |
-| [スマホ幅の実画面](docs/screenshots/replan-390.png) | Chromium390px。実スマホ撮影ではない |
+| [スマホ幅の実画面](docs/screenshots/quality/replan-390.jpg) | Chromium390px。実スマホ撮影ではない |
 
 外部サービスの月額利用料0円。DB・計算はローカル、実行時の外部API/キー不要。Docker等の利用条件、電気・通信費は別途確認してください。製品要件v1.0は未承認、実農場の価値・農学的安全性は未検証です。
 
