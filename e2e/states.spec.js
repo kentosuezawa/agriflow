@@ -6,8 +6,8 @@ for(const status of ['OPTIMAL','FEASIBLE','INFEASIBLE','UNKNOWN'])test(`PF-06: $
   if(['INFEASIBLE','UNKNOWN'].includes(status)){sample.proposal.assignments=[];sample.proposal.makespan=null;}
   sample.state.proposals=[sample.proposal];
   await page.route('**/api/state',route=>route.fulfill({json:sample.state}));
-  await page.goto('/');await page.getByRole('button',{name:'3 · 計画と比較'}).click();
-  await expect(page.locator('#proposal .status')).toHaveText(status);
+  await page.goto('/');await page.getByRole('button',{name:'計画と比較'}).click();
+  await expect(page.locator('#proposal .status')).toHaveText({ OPTIMAL:'最適解', FEASIBLE:'実行可能', INFEASIBLE:'割当不可', UNKNOWN:'未判定' }[status]);
   if(status==='UNKNOWN')await expect(page.locator('#proposal')).toContainText('解なしの証明ではありません');
   if(status==='FEASIBLE')await expect(page.locator('#proposal')).toContainText('最適性は証明されていません');
   if(['INFEASIBLE','UNKNOWN'].includes(status))await expect(page.getByRole('button',{name:'この候補を承認して確定'})).toHaveCount(0);

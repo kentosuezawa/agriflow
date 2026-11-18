@@ -10,10 +10,10 @@ test('PF-03 / FR-008: name-only edit retains all predecessor IDs', async ({ page
   s = await create('operations', { ...base, name: '先行A' }); const a = s.operations.at(-1).id;
   s = await create('operations', { ...base, name: '先行B' }); const b = s.operations.at(-1).id;
   s = await create('operations', { ...base, name: '後続C', predecessors: [a,b] }); const c = s.operations.at(-1).id;
-  await page.goto('/'); await page.getByRole('button', { name: '2 · 作業と条件' }).click();
+  await page.goto('/'); await page.getByRole('button', { name: '作業と条件' }).click();
   await page.locator('#operations-list .record').filter({ hasText: '後続C' }).getByRole('button', { name: '編集', exact: true }).click();
   const form = page.locator('form[data-collection="operations"]');
-  await expect(form.locator('[name="predecessor"] option:checked')).toHaveCount(2);
+  await expect(form.locator('[name="predecessor"]:checked')).toHaveCount(2);
   await form.locator('[name="name"]').fill('後続C（名称のみ変更）');
   await form.getByRole('button', { name: '変更を保存' }).click();
   await expect(page.locator('#operations-list')).toContainText('後続C（名称のみ変更）');
